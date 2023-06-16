@@ -1,0 +1,166 @@
+<template>
+  <div class="dropdown-container">
+    <div class="dropdown">
+      <div v-if="searchQuery === '' && !isDropdownOpen" class="dropdown-header" @click="toggleDropdown">
+        <span class="dropdown-placeholder">Select an item</span>
+        <img :src="iconDown" />
+      </div>
+      <div v-else class="dropdown-header">
+        <input
+          type="text"
+          placeholder="This is a input search"
+          class="dropdown-search-input"
+          v-model="searchQuery"
+          @input="handleSearch"
+          autofocus
+          name="dropSearch"
+        />
+        <img :src="iconUp" @click="toggleDropdown" />
+      </div>
+      <div v-if="isDropdownOpen" class="dropdown-list">
+        <div v-if="filteredFruits.length === 0">
+          <p>No items were found.</p>
+        </div>
+        <div v-else>
+          <div
+            v-for="fruit in filteredFruits"
+            :key="fruit"
+            :name="fruit"
+            @click="selectFruit(fruit)"
+            class="dropdown-item"
+          >
+            {{ fruit }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import iconDown from '../../assets/media/chevron_down.png';
+import iconUp from '../../assets/media/chevron_up.png';
+
+export default {
+  data() {
+    return {
+      fruits: [],
+      filteredFruits: [],
+      searchQuery: '',
+      isDropdownOpen: false,
+      iconDown: iconDown,
+      iconUp: iconUp,
+      apiUrl: import.meta.env.VITE_FRUITS_API_URL,
+    };
+  },
+  mounted() {
+    this.fetchFruits();
+  },
+  methods: {
+    fetchFruits() {
+      fetch(this.apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          this.fruits = data.data.fruits;
+          this.filteredFruits = data.data.fruits;
+        })
+        .catch(error => {
+          console.error('Error fetching fruits:', error);
+        });
+    },
+    handleSearch() {
+      const filtered = this.fruits.filter(fruit =>
+        fruit.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+      this.filteredFruits = filtered;
+    },
+    toggleDropdown() {
+      this.isDropdownOpen = !this.isDropdownOpen;
+    },
+    selectFruit(fruit) {
+      this.searchQuery = fruit;
+      this.isDropdownOpen = false;
+    },
+  },
+};
+</script>
+
+<style scoped>
+.dropdown-container {
+    position: absolute;
+    top: 10%;
+    left: 15%;
+    width: 320px;
+    height: auto;
+    background: #EDF2F7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px;
+}
+.dropdown-container .dropdown {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 256px;
+    background: #FFFFFF;
+    box-shadow: 0px 10px 15px rgba(35, 78, 82, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+}
+.dropdown-container .dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+.dropdown-container .dropdown-header span {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    color: #A0AEC0;
+}
+.dropdown-container .dropdown-header input {
+    border: none;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    margin-bottom: 10px;
+}
+.dropdown-container .dropdown-header input:focus-visible {
+    outline: none;
+}
+.dropdown-container .dropdown-list {
+    left: 10%;
+    right: 10%;
+    top: 9.2%;
+    bottom: 9.2%;
+    
+    background: #FFFFFF;
+    border-radius: 8px;
+    width: 100%;
+    max-height: 300px;
+    text-align: left;
+    overflow: scroll;
+}
+.dropdown-container .dropdown-list .dropdown-item {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 24px;
+    color: #1A202C;
+    cursor: pointer;
+    margin-bottom: 12px;
+}
+.dropdown-container .dropdown-list .dropdown-item:hover {
+    color: #4299E1;
+}
+.dropdown-container .dropdown-list p {
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 24px;
+    color: #A0AEC0;
+}
+</style>
